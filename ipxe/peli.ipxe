@@ -1,0 +1,13 @@
+#!ipxe
+dhcp
+
+set STREAM stable
+set VERSION 33.20210328.3.0
+set CONFIGURL http://192.168.18.1:8014/config.ign
+set BASEURL tftp://192.168.18.1
+set FEDORAURL http://192.168.18.1:8014
+
+kernel ${BASEURL}/fedora-coreos-${VERSION}-live-kernel-x86_64 initrd=main coreos.live.rootfs_url=${FEDORAURL}/fedora-coreos-${VERSION}-live-rootfs.x86_64.img ignition.firstboot ignition.platform.id=metal ignition.config.url=${CONFIGURL} systemd.unified_cgroup_hierarchy=0
+initrd --name main ${BASEURL}/fedora-coreos-${VERSION}-live-initramfs.x86_64.img
+
+boot
