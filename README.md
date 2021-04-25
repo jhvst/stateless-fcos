@@ -1,11 +1,35 @@
 # stateless-fcos
-Booting live Fedora CoreOS via iPXE
+## Booting live Fedora CoreOS via iPXE
 
-Once upon a time I ran CoreOS machines. Then, CoreOS got bought by RedHat. Then, RedHat got bought by IBM. I was quite happy with it all since I owned RedHat shares.
+Once upon a time I ran CoreOS machines. Then, CoreOS got bought by RedHat. Then, RedHat got bought by IBM. I was quite happy with it all. I owned RedHat shares.
 
-Some time after, CoreOS also became Fedora CoreOS. As I evolved my own infra, I found about live booting via iPXE, so I put together an infra.
+Next, CoreOS became Fedora CoreOS. When I upgraded to Fedora CoreOS, I found about live booting via iPXE. This was such a hassle that I put up this repository.
 
-This project has all the files for a computer to mimic a router. This is because in my case the inner network is as follows:
+## Introduction:
+
+We want to make a boot sequence as follows:
+
+BIOS -> PXE -> iPXE -> Fedora CoreOS
+
+This happens roughly as follows:
+
+```
+[Client]                   [Server]
+1. BIOS
+2. PXE                  -> DHCP
+3. iPXE                 <- iPXE image (`undionly.kpxe`)
+4. REQ TFTP             -> TFTP server
+5. iPXE BOOT            <- Fedora CoreOS initramfs,kernel
+6. REQ Ignition         -> HTTP server
+7. Fedora CoreOS        <- Ignition file, Fedora CoreOS rootfs
+8. Successful RAM boot
+```
+
+To prepare for successful RAM boot, you may start from `dhcpd` folder.
+
+## Background
+
+My infra is as follows:
 
 ```
 pfSense router [1]-[2]-[3]-[4]
@@ -16,6 +40,6 @@ pfSense router [1]-[2]-[3]-[4]
                         "peli"  [1]
 ```
 
-The idea is that the router has four ports, of which one goes to a node called "muro", which has two ports, of which one goes to a node called "peli". This project has files so that a) "muro" can share the upstream network to "peli" and b) "peli" can boot from "muro", which in itself boots from pfSense.
+In other words, my router has four ports. Port 4 goes to a computer `muro` which has two ports. Muro shares WAN and pfSense LAN connection to `peli`.
 
-Throughout the README, the host computer to which the packages are installed is supposed to be "muro" and the computer which is booting PXE is "peli".
+`muro` boots CoreOS from pfSense. `peli` boots CoreOS from `muro`. This project demonstrates how `peli` boots from `muro`. As such, throughout the READMEs the packages are installed on `muro` and the computer which is booting PXE is `peli`.
