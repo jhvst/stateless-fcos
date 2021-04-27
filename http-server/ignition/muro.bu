@@ -1,0 +1,231 @@
+variant: fcos
+version: 1.3.0
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCoESlG8Y4e4IcGGjFb+nzweiIawOb9CX9lBCrzQAHleBN9++kf44YBJ/RMtUrdxbPmL87q56s9bgDPIG3zWJglB05eB0u6upMt8oNZgrZ2qM01juOEQNiTQzdV0iPWPvkQZfilkPVHzEO9h5BGfXIz+HIZukc1AseBl5c5L/5+y/FNydFyITWiPz/7W9dtlPvDPL0OWe0raEyDs2xOZLHGOY/YTT3k/Meoo7iUURUNtwwDcL6crcwj6OxYF8gaXuXWqYFumi7yK3bpC0JyZM7eKTO5+zSK7TelkhjtD+lHrZez47pAeU+vTJh/N160018dhrg0mPZuIzCLBWTQQst8OiGsgUEu/fh9+NDKbKiUZhSD9T3QVIBdFBlLpVEf5SNTeCIs2ur8149dOzrTEYY6Qppmq/iaqfrVRPPowJJp9WFzKpRJfI8tKpGd+ofRlORHfG7WHYIEUk+6Cwcpba6Mpt3+LxHThv1Hnvmm9ZMf14RKNUJNZRZbHZXBmAfjMyFWuJoqAdcl8yEbgJMu9TK8IGWsNEWIE2e1gSkjG1m2Z2UwqCpe0glxF5cy0JDOfksMIVE0P1V9UxHfyR5xlKnpELH2q0I+7W0pF+m62F4y/7MiYBFEMA1ing62wlws98yS9KGYqT6U/mL4wnr8U9WsuVhDkd0uCIui0f/HoPx3ZQ== Juuso’siPhone
+storage:
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        inline: muro
+    - path: /etc/NetworkManager/system-connections/enp0s31f6.nmconnection
+      mode: 0600
+      contents:
+        inline: |
+          [connection]
+          id=enp0s31f6
+          type=ethernet
+          interface-name=enp0s31f6
+          [ipv4]
+          address1=192.168.18.1/24
+          gateway=192.168.18.1
+          dns=192.168.17.1
+          method=manual
+          [ipv6]
+          method=disabled
+    - path: /var/home/core/dhcpd/dhcpd.conf
+      mode: 0644
+      contents:
+        inline: |
+          subnet 192.168.18.0 netmask 255.255.255.0 {
+            pool {
+              range 192.168.18.10 192.168.18.254;
+            }
+            next-server 192.168.18.1;
+            filename "undionly.kpxe";
+          }
+    - path: /var/home/core/ipxe/peli.ipxe
+      mode: 0644
+      contents:
+        inline: |
+          #!ipxe
+          dhcp
+
+          set STREAM stable
+          set VERSION 33.20210328.3.0
+          set CONFIGURL http://192.168.18.1:8014/config.ign
+          set BASEURL tftp://192.168.18.1
+          set FEDORAURL http://192.168.18.1:8014
+
+          kernel ${BASEURL}/fedora-coreos-${VERSION}-live-kernel-x86_64 initrd=main coreos.live.rootfs_url=${FEDORAURL}/fedora-coreos-${VERSION}-live-rootfs.x86_64.img ignition.firstboot ignition.platform.id=metal ignition.config.url=${CONFIGURL} systemd.unified_cgroup_hierarchy=0
+          initrd --name main ${BASEURL}/fedora-coreos-${VERSION}-live-initramfs.x86_64.img
+
+          boot
+    - path: /var/home/core/http-server/Dockerfile
+      mode: 0644
+      contents:
+        inline: |
+          FROM alpine
+
+          RUN apk update
+          RUN apk add python3
+          WORKDIR /mnt/coreos
+          CMD python3 -m http.server 8014
+    - path: /var/home/core/ipxe/Dockerfile
+      mode: 0644
+      contents:
+        inline: |
+          FROM ubuntu
+
+          RUN apt update
+          RUN apt install -y git gcc binutils make perl mtools liblzma-dev mkisofs syslinux
+          RUN git clone git://git.ipxe.org/ipxe.git /tmp/ipxe
+          RUN sed -i 's|.*DOWNLOAD_PROTO_HTTPS|#define DOWNLOAD_PROTO_HTTPS|' /tmp/ipxe/src/config/general.h
+          RUN make --directory=/tmp/ipxe/src bin/undionly.kpxe
+          CMD make --directory=/tmp/ipxe/src bin/undionly.kpxe EMBED=/mnt/coreos/peli.ipxe && mv /tmp/ipxe/src/bin/undionly.kpxe /mnt/coreos
+    - path: /var/home/core/tftp/fedora-coreos-33.20210328.3.0-live-initramfs.x86_64.img
+      mode: 0644
+      contents:
+        source: tftp://nyt2.ponkila.com/fedora-coreos-33.20210328.3.0-live-initramfs.x86_64.img
+    - path: /var/home/core/tftp/fedora-coreos-33.20210328.3.0-live-kernel-x86_64
+      mode: 0644
+      contents:
+        source: tftp://nyt2.ponkila.com/fedora-coreos-33.20210328.3.0-live-kernel-x86_64
+    - path: /var/home/core/http-server/fedora-coreos-33.20210328.3.0-live-rootfs.x86_64.img
+      mode: 0644
+      contents:
+        source: https://nyt2.ponkila.com/ipxe/fedora-coreos-33.20210328.3.0-live-rootfs.x86_64.img
+    - path: /var/lib/systemd/linger/core
+      mode: 0600
+      contents:
+        inline: "∃ '/var/lib/systemd/linger/core' -> loginctl enable-linger core"
+  filesystems:
+    - path: /var/mnt/bakhal
+      device: /dev/disk/by-label/bakhal
+      format: btrfs
+      with_mount_unit: true
+systemd:
+  units:
+    - name: internetsharing.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Shares Internet
+        After=network-online.target
+        Wants=network-online.target
+
+        [Service]
+        Type=oneshot
+        ExecStartPre=/usr/sbin/sysctl net.ipv4.ip_forward=1
+        ExecStartPre=/usr/sbin/iptables -t nat -A POSTROUTING -o enp2s0 -j MASQUERADE
+        ExecStartPre=/usr/sbin/iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+        ExecStart=/usr/sbin/iptables -A FORWARD -i enp0s31f6 -o enp2s0 -j ACCEPT
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: persistentcontainer.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Persist container data
+        After=local-fs.target
+        Wants=local-fs.target
+
+        [Service]
+        Type=oneshot
+        ExecStartPre=/usr/bin/mv /var/mnt/bakhal/podman /var/mnt/bakhal/podman.old
+        ExecStartPre=/usr/bin/mkdir -p /var/mnt/bakhal/podman/runroot /var/mnt/bakhal/podman/graphroot /var/mnt/bakhal/podman/rootless
+        ExecStartPre=/usr/bin/chown -R core:core /var/mnt/bakhal/podman
+        ExecStartPre=/usr/bin/chown -R core:core /var/home/core
+        ExecStartPre=/usr/bin/sed -i 's|runroot = "/run/containers/storage"|runroot = "/var/mnt/bakhal/podman/runroot"|' /etc/containers/storage.conf
+        ExecStartPre=/usr/bin/sed -i 's|graphroot = "/var/lib/containers/storage"|graphroot = "/var/mnt/bakhal/podman/graphroot"|' /etc/containers/storage.conf
+        ExecStartPre=/usr/bin/sed -i 's|# rootless_storage_path = "$HOME/.local/share/containers/storage"|rootless_storage_path = "/var/mnt/bakhal/podman/rootless"|' /etc/containers/storage.conf
+        ExecStart=/usr/bin/sed -i 's/driver = "overlay"/driver = "btrfs"/' /etc/containers/storage.conf
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: plex.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Plex media server
+        Requires=persistentcontainer.service
+        Requires=network-online.target
+        After=persistentcontainer.service
+        After=network-online.target
+
+        [Service]
+        User=core
+        Type=simple
+        ExecStart=/bin/podman run \
+          --name plex \
+          --network=host \
+          -e TZ="Europe/Helsinki" \
+          -e PLEX_UID="1000" \
+          -e PLEX_GID="1000" \
+          -e CHANGE_CONFIG_DIR_OWNERSHIP="false" \
+          -v /var/mnt/bakhal/Plex/.config:/config:Z \
+          -v /var/mnt/bakhal/Plex/.transcode:/transcode:Z \
+          -v /var/mnt/bakhal/Plex:/data:Z \
+          plexinc/pms-docker
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: dhcpd.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=dhcpd
+        Requires=persistentcontainer.service
+        Requires=internetsharing.service
+        After=persistentcontainer.service
+        After=internetsharing.service
+
+        [Service]
+        Type=simple
+        ExecStart=/usr/bin/docker run \
+          --name dhcpd \
+          --init \
+          --cap-add NET_ADMIN \
+          --net=host \
+          -v /var/home/core/dhcpd:/data:Z \
+          networkboot/dhcpd enp0s31f6
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: ipxe.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=ipxe
+        Requires=persistentcontainer.service
+        Requires=network-online.target
+        After=persistentcontainer.service
+        After=network-online.target
+
+        [Service]
+        User=core
+        Type=oneshot
+        ExecStartPre=/bin/podman build -t local/ipxe /var/home/core/ipxe
+        ExecStartPre=/bin/podman run \
+          -v /var/home/core/ipxe:/mnt/coreos:Z \
+          local/ipxe
+        ExecStart=/usr/bin/mv /var/home/core/ipxe/undionly.kpxe /var/home/core/tftp
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: ignition-server.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=http server for ignition files
+        Requires=persistentcontainer.service
+        Requires=network-online.target
+        After=persistentcontainer.service
+        After=network-online.target
+
+        [Service]
+        User=core
+        Type=simple
+        ExecStartPre=/bin/podman build -t local/ignition-server /var/home/core/http-server
+        ExecStart=/bin/podman run \
+          --name http-server \
+          --net=host \
+          -v /var/home/core/http-server:/mnt/coreos:Z \
+          local/ignition-server
+
+        [Install]
+        WantedBy=multi-user.target
