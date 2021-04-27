@@ -126,14 +126,7 @@ systemd:
 
         [Service]
         Type=oneshot
-        ExecStartPre=/usr/bin/mv /var/mnt/bakhal/podman /var/mnt/bakhal/podman.old
-        ExecStartPre=/usr/bin/mkdir -p /var/mnt/bakhal/podman/runroot /var/mnt/bakhal/podman/graphroot /var/mnt/bakhal/podman/rootless
-        ExecStartPre=/usr/bin/chown -R core:core /var/mnt/bakhal/podman
         ExecStartPre=/usr/bin/chown -R core:core /var/home/core
-        ExecStartPre=/usr/bin/sed -i 's|runroot = "/run/containers/storage"|runroot = "/var/mnt/bakhal/podman/runroot"|' /etc/containers/storage.conf
-        ExecStartPre=/usr/bin/sed -i 's|graphroot = "/var/lib/containers/storage"|graphroot = "/var/mnt/bakhal/podman/graphroot"|' /etc/containers/storage.conf
-        ExecStartPre=/usr/bin/sed -i 's|# rootless_storage_path = "$HOME/.local/share/containers/storage"|rootless_storage_path = "/var/mnt/bakhal/podman/rootless"|' /etc/containers/storage.conf
-        ExecStart=/usr/bin/sed -i 's/driver = "overlay"/driver = "btrfs"/' /etc/containers/storage.conf
 
         [Install]
         WantedBy=multi-user.target
