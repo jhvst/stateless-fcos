@@ -128,6 +128,7 @@ storage:
     - path: /var/mnt/bakhal
       device: /dev/disk/by-label/bakhal
       format: btrfs
+      mount_options: [compress-force=zstd]
       with_mount_unit: true
 systemd:
   units:
@@ -158,6 +159,10 @@ systemd:
 
         [Service]
         Type=oneshot
+        ExecStartPre=/usr/bin/echo none > /sys/block/loop0/queue/scheduler
+        ExecStartPre=/usr/bin/echo none > /sys/block/loop1/queue/scheduler
+        ExecStartPre=/usr/bin/echo kyber > /sys/block/sdb/queue/scheduler
+        ExecStartPre=/usr/bin/echo kyber > /sys/block/sdc/queue/scheduler
         ExecStart=/usr/bin/chown -R core:core /var/home/core
 
         [Install]
