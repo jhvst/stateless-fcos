@@ -172,9 +172,7 @@ systemd:
       contents: |
         [Unit]
         Description=Plex media server
-        Requires=persistentcontainer.service
         Requires=network-online.target
-        After=persistentcontainer.service
         After=network-online.target
 
         [Service]
@@ -197,7 +195,7 @@ systemd:
         [Install]
         WantedBy=multi-user.target
     - name: dhcpd.service
-      enabled: true
+      enabled: false
       contents: |
         [Unit]
         Description=dhcpd
@@ -221,7 +219,7 @@ systemd:
         [Install]
         WantedBy=multi-user.target
     - name: ipxe.service
-      enabled: true
+      enabled: false
       contents: |
         [Unit]
         Description=ipxe
@@ -243,12 +241,14 @@ systemd:
         [Install]
         WantedBy=multi-user.target
     - name: ignition-server.service
-      enabled: true
+      enabled: false
       contents: |
         [Unit]
         Description=http server for ignition files
         Requires=butane-transpiler.service
+        Requires=network-online.target
         After=butane-transpiler.service
+        After=network-online.target
 
         [Service]
         User=core
@@ -265,7 +265,7 @@ systemd:
         [Install]
         WantedBy=multi-user.target
     - name: butane-transpiler.service
-      enabled: true
+      enabled: false
       contents: |
         [Unit]
         Description=butane transpiler
@@ -286,7 +286,7 @@ systemd:
         [Install]
         WantedBy=multi-user.target
     - name: tftp.service
-      enabled: true
+      enabled: false
       contents: |
         [Unit]
         Description=tftp server for pxe boot
@@ -303,6 +303,51 @@ systemd:
           --net=host \
           -v /var/home/core/tftp:/var/tftpboot:Z \
           taskinen/tftp
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: ipfs.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=ipfs server
+        Requires=network-online.target
+        After=network-online.target
+
+        [Service]
+        User=core
+        Type=simple
+        ExecStartPre=-/bin/podman kill ipfs
+        ExecStartPre=-/bin/podman rm ipfs
+        ExecStart=/bin/podman run \
+          --name ipfs \
+          --net=host \
+          -v /var/mnt/bakhal/ipfs:/export:Z \
+          -v /var/mnt/bakhal/ipfs:/data/ipfs:Z \
+          ipfs/go-ipfs:latest
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: openethereum.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=openethereum
+        Requires=network-online.target
+        After=network-online.target
+
+        [Service]
+        User=core
+        Type=simple
+        ExecStartPre=-/bin/podman kill openethereum
+        ExecStartPre=-/bin/podman rm openethereum
+        ExecStart=/bin/podman run \
+          --name openethereum \
+          -v /var/mnt/bakhal/blockchain/eth1/openethereum:/mainnet:Z \
+          openethereum/openethereum \
+          --base-path /mainnet \
+          --cache-size 4096 \
+          --no-warp
 
         [Install]
         WantedBy=multi-user.target
