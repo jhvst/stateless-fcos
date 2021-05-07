@@ -1,8 +1,7 @@
 #!ipxe
 dhcp
 
-set STREAM stable
-set VERSION 33.20210328.3.0
+set VERSION 33.20210412.3.0
 set CONFIGURL https://nyt2.ponkila.com/ipxe/config.ign
 set BASEURL tftp://nyt2.ponkila.com
 set FEDORAURL https://nyt2.ponkila.com/ipxe

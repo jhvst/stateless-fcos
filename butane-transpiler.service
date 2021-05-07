@@ -1,0 +1,18 @@
+[Unit]
+Description=butane transpiler
+Requires=persistentcontainer.service
+Requires=network-online.target
+After=persistentcontainer.service
+After=network-online.target
+
+[Service]
+User=core
+Type=oneshot
+ExecStart=/bin/podman run \
+    --rm \
+    --volume /var/home/core/http-server:/pwd:Z \
+    --workdir /pwd quay.io/coreos/butane:release \
+    --pretty --strict peli.yaml -o config.ign
+
+[Install]
+WantedBy=multi-user.target

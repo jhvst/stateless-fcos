@@ -1,0 +1,21 @@
+[Unit]
+Description=dhcpd
+Requires=persistentcontainer.service
+Requires=internetsharing.service
+After=persistentcontainer.service
+After=internetsharing.service
+
+[Service]
+Type=simple
+ExecStartPre=-/bin/docker kill dhcpd
+ExecStartPre=-/bin/docker rm dhcpd
+ExecStart=/usr/bin/docker run \
+    --name dhcpd \
+    --init \
+    --cap-add NET_ADMIN \
+    --net=host \
+    -v /var/home/core/dhcpd:/data:Z \
+    networkboot/dhcpd enp0s31f6
+
+[Install]
+WantedBy=multi-user.target

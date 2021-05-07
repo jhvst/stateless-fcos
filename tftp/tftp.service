@@ -1,0 +1,18 @@
+[Unit]
+Description=tftp server for pxe boot
+Requires=ipxe.service
+After=ipxe.service
+
+[Service]
+Type=simple
+ExecStartPre=-/bin/docker kill tftp
+ExecStartPre=-/bin/docker rm tftp
+ExecStart=/bin/docker run \
+    --name tftp \
+    --cap-add NET_ADMIN \
+    --net=host \
+    -v /var/home/core/tftp:/var/tftpboot:Z \
+    taskinen/tftp
+
+[Install]
+WantedBy=multi-user.target

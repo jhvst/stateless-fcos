@@ -76,7 +76,6 @@ storage:
           #!ipxe
           dhcp
 
-          set STREAM stable
           set VERSION 33.20210328.3.0
           set CONFIGURL http://192.168.18.1:8014/config.ign
           set BASEURL tftp://192.168.18.1
@@ -120,15 +119,17 @@ storage:
       mode: 0644
       contents:
         source: https://nyt2.ponkila.com/ipxe/fedora-coreos-33.20210328.3.0-live-rootfs.x86_64.img
-    - path: /var/lib/systemd/linger/core
-      mode: 0600
-      contents:
-        inline: "∃ '/var/lib/systemd/linger/core' -> loginctl enable-linger core"
   filesystems:
     - path: /var/mnt/bakhal
       device: /dev/disk/by-label/bakhal
       format: btrfs
-      mount_options: [compress-force=zstd]
+      # to enable space_cache=v2, prepend 'clear_cache' option
+      mount_options: [compress=zstd:2, noatime, space_cache=v2]
+      with_mount_unit: true
+    - path: /var/mnt/lastu
+      device: /dev/disk/by-label/lastu
+      format: btrfs
+      mount_options: [compress=zstd:2, noatime]
       with_mount_unit: true
 systemd:
   units:
@@ -161,8 +162,7 @@ systemd:
         Type=oneshot
         ExecStartPre=/usr/bin/echo none > /sys/block/loop0/queue/scheduler
         ExecStartPre=/usr/bin/echo none > /sys/block/loop1/queue/scheduler
-        ExecStartPre=/usr/bin/echo kyber > /sys/block/sdb/queue/scheduler
-        ExecStartPre=/usr/bin/echo kyber > /sys/block/sdc/queue/scheduler
+        ExecStartPre=/usr/bin/loginctl enable-linger core
         ExecStart=/usr/bin/chown -R core:core /var/home/core
 
         [Install]
@@ -343,10 +343,11 @@ systemd:
         ExecStartPre=-/bin/podman rm openethereum
         ExecStart=/bin/podman run \
           --name openethereum \
-          -v /var/mnt/bakhal/blockchain/eth1/openethereum:/mainnet:Z \
+          -v /var/mnt/lastu/blockchain/eth1/openethereum:/mainnet:Z \
           openethereum/openethereum \
           --base-path /mainnet \
-          --cache-size 4096 \
+          --cache-size 8192 \
+          --pruning fast \
           --no-warp
 
         [Install]

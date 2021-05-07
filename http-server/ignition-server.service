@@ -1,0 +1,21 @@
+[Unit]
+Description=http server for ignition files
+Requires=butane-transpiler.service
+Requires=network-online.target
+After=butane-transpiler.service
+After=network-online.target
+
+[Service]
+User=core
+Type=simple
+ExecStartPre=-/bin/podman kill http-server
+ExecStartPre=-/bin/podman rm http-server
+ExecStartPre=/bin/podman build -t local/ignition-server /var/home/core/http-server
+ExecStart=/bin/podman run \
+    --name http-server \
+    --net=host \
+    -v /var/home/core/http-server:/mnt/coreos:Z \
+    local/ignition-server
+
+[Install]
+WantedBy=multi-user.target

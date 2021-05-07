@@ -1,0 +1,19 @@
+[Unit]
+Description=ipxe
+Requires=persistentcontainer.service
+Requires=network-online.target
+After=persistentcontainer.service
+After=network-online.target
+
+[Service]
+User=core
+Type=oneshot
+ExecStartPre=/bin/podman build -t local/ipxe /var/home/core/ipxe
+ExecStartPre=/bin/podman run \
+    --rm \
+    -v /var/home/core/ipxe:/mnt/coreos:Z \
+    local/ipxe
+ExecStart=/usr/bin/mv /var/home/core/ipxe/undionly.kpxe /var/home/core/tftp
+
+[Install]
+WantedBy=multi-user.target
