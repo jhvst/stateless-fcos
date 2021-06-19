@@ -152,8 +152,8 @@ systemd:
       contents: |
         [Unit]
         Description=Plex media server
-        Requires=network-online.target
-        After=network-online.target
+        Requires=xteve.service
+        After=xteve.service
 
         [Service]
         User=core
@@ -170,7 +170,7 @@ systemd:
           -v /var/mnt/bakhal/Plex/.config:/config:Z \
           -v /var/mnt/bakhal/Plex/.transcode:/transcode:Z \
           -v /var/mnt/bakhal/Plex:/data:Z \
-          plexinc/pms-docker
+          docker.io/plexinc/pms-docker
 
         [Install]
         WantedBy=multi-user.target
@@ -194,7 +194,7 @@ systemd:
           --cap-add NET_ADMIN \
           --net=host \
           -v /var/home/core/dhcpd:/data:Z \
-          networkboot/dhcpd enp0s31f6
+          docker.io/networkboot/dhcpd enp0s31f6
 
         [Install]
         WantedBy=multi-user.target
@@ -282,12 +282,12 @@ systemd:
           --cap-add NET_ADMIN \
           --net=host \
           -v /var/home/core/tftp:/var/tftpboot:Z \
-          taskinen/tftp
+          docker.io/taskinen/tftp
 
         [Install]
         WantedBy=multi-user.target
     - name: ipfs.service
-      enabled: true
+      enabled: false
       contents: |
         [Unit]
         Description=ipfs server
@@ -304,12 +304,12 @@ systemd:
           --net=host \
           -v /var/mnt/bakhal/ipfs:/export:Z \
           -v /var/mnt/bakhal/ipfs:/data/ipfs:Z \
-          ipfs/go-ipfs:latest
+          docker.io/ipfs/go-ipfs
 
         [Install]
         WantedBy=multi-user.target
     - name: openethereum.service
-      enabled: true
+      enabled: false
       contents: |
         [Unit]
         Description=openethereum
@@ -324,11 +324,150 @@ systemd:
         ExecStart=/bin/podman run \
           --name openethereum \
           -v /var/mnt/lastu/blockchain/eth1/openethereum:/mainnet:Z \
-          openethereum/openethereum \
+          docker.io/openethereum/openethereum \
           --base-path /mainnet \
-          --cache-size 8192 \
           --pruning fast \
           --no-warp
 
+        [Install]
+        WantedBy=multi-user.target
+    - name: openethereum-archive.service
+      enabled: false
+      contents: |
+        [Unit]
+        Description=openethereum-archive
+        Requires=network-online.target
+        After=network-online.target
+
+        [Service]
+        User=core
+        Type=simple
+        ExecStartPre=-/bin/podman kill openethereum-archive
+        ExecStartPre=-/bin/podman rm openethereum-archive
+        ExecStart=/bin/podman run \
+          --name openethereum-archive \
+          -v /var/mnt/bakhal/blockchain/eth1-archive/openethereum:/mainnet:Z \
+          docker.io/openethereum/openethereum \
+          --base-path /mainnet \
+          --fat-db on \
+          --pruning archive \
+          --tracing on
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: openethereum-goerli.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=openethereum-goerli
+        Requires=network-online.target
+        After=network-online.target
+
+        [Service]
+        User=core
+        Type=simple
+        ExecStartPre=-/bin/podman kill openethereum-goerli
+        ExecStartPre=-/bin/podman rm openethereum-goerli
+        ExecStart=/bin/podman run \
+          --name openethereum-goerli \
+          -v /var/mnt/bakhal/blockchain/eth1/openethereum:/goerli:Z \
+          docker.io/openethereum/openethereum \
+          --chain goerli \
+          --base-path /goerli \
+          --fat-db on \
+          --pruning archive
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: lighthouse.service
+      enabled: false
+      contents: |
+        [Unit]
+        Description=lighthouse
+        Requires=network-online.target
+        After=network-online.target
+
+        [Service]
+        User=core
+        Type=simple
+        ExecStartPre=-/bin/podman kill lighthouse
+        ExecStartPre=-/bin/podman rm lighthouse
+        ExecStart=/bin/podman run \
+          --name lighthouse \
+          -v /var/mnt/bakhal/blockchain/eth2/lighthouse:/root/.lighthouse:Z \
+          docker.io/sigp/lighthouse lighthouse \
+          --network mainnet \
+          beacon
+        [Install]
+        WantedBy=multi-user.target
+    - name: lighthouse-pyrmont.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=lighthouse-pyrmont
+        Requires=network-online.target
+        After=network-online.target
+
+        [Service]
+        User=core
+        Type=simple
+        ExecStartPre=-/bin/podman kill lighthouse-pyrmont
+        ExecStartPre=-/bin/podman rm lighthouse-pyrmont
+        ExecStart=/bin/podman run \
+          --name lighthouse-pyrmont \
+          -v /var/mnt/bakhal/blockchain/eth2/lighthouse-pyrmont:/root/.lighthouse:Z \
+          docker.io/sigp/lighthouse lighthouse \
+          --network pyrmont \
+          beacon
+        [Install]
+        WantedBy=multi-user.target
+    - name: tautulli.service
+      enabled: false
+      contents: |
+        [Unit]
+        Description=tautulli for plex
+        Requires=plex.service
+        After=plex.service
+
+        [Service]
+        User=core
+        Type=simple
+        ExecStartPre=-/bin/podman kill tautulli
+        ExecStartPre=-/bin/podman rm tautulli
+        ExecStart=/bin/podman run \
+          --name=tautulli \
+          -v /var/mnt/bakhal/tautulli:/config:Z \
+          -e PUID=1000 \
+          -e PGID=1000 \
+          -e TZ=Europe/Helsinki \
+          -p 8181:8181 \
+          --cap-add NET_ADMIN \
+          --net=host \
+          docker.io/tautulli/tautulli
+        [Install]
+        WantedBy=multi-user.target
+    - name: xteve.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=xteve (iptv) for plex
+        Requires=network-online.target
+        After=network-online.target
+
+        [Service]
+        User=core
+        Type=simple
+        ExecStartPre=-/bin/podman kill xteve
+        ExecStartPre=-/bin/podman rm xteve
+        ExecStart=/bin/podman run \
+          --name=xteve \
+          --net=host \
+          --cap-add NET_ADMIN \
+          -e TZ="Europe/Helsinki" \
+          -v /var/mnt/bakhal/xteve:/root/.xteve:Z \
+          -v /var/mnt/bakhal/xteve/config:/config:Z \
+          -v /var/mnt/bakhal/xteve/tmp:/tmp/xteve:Z \
+          -v /var/mnt/bakhal/xteve/tvheadend:/TVH:Z \
+          docker.io/alturismo/xteve:latest
         [Install]
         WantedBy=multi-user.target
