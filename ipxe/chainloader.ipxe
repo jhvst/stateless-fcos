@@ -1,0 +1,4 @@
+#!ipxe
+dhcp
+
+chain --replace --autofree tftp://192.168.18.1/menu.ipxe

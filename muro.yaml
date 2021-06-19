@@ -69,22 +69,14 @@ storage:
             next-server 192.168.18.1;
             filename "undionly.kpxe";
           }
-    - path: /var/home/core/ipxe/peli.ipxe
+    - path: /var/home/core/ipxe/chainloader.ipxe
       mode: 0644
       contents:
         inline: |
           #!ipxe
           dhcp
 
-          set VERSION 33.20210328.3.0
-          set CONFIGURL http://192.168.18.1:8014/config.ign
-          set BASEURL tftp://192.168.18.1
-          set FEDORAURL http://192.168.18.1:8014
-
-          kernel ${BASEURL}/fedora-coreos-${VERSION}-live-kernel-x86_64 initrd=main coreos.live.rootfs_url=${FEDORAURL}/fedora-coreos-${VERSION}-live-rootfs.x86_64.img ignition.firstboot ignition.platform.id=metal ignition.config.url=${CONFIGURL} systemd.unified_cgroup_hierarchy=0
-          initrd --name main ${BASEURL}/fedora-coreos-${VERSION}-live-initramfs.x86_64.img
-
-          boot
+          chain --replace --autofree tftp://192.168.18.1/menu.ipxe
     - path: /var/home/core/http-server/Dockerfile
       mode: 0644
       contents:
@@ -106,19 +98,7 @@ storage:
           RUN git clone git://git.ipxe.org/ipxe.git /tmp/ipxe
           RUN sed -i 's|.*DOWNLOAD_PROTO_HTTPS|#define DOWNLOAD_PROTO_HTTPS|' /tmp/ipxe/src/config/general.h
           RUN make --directory=/tmp/ipxe/src bin/undionly.kpxe
-          CMD make --directory=/tmp/ipxe/src bin/undionly.kpxe EMBED=/mnt/coreos/peli.ipxe && mv /tmp/ipxe/src/bin/undionly.kpxe /mnt/coreos
-    - path: /var/home/core/tftp/fedora-coreos-33.20210328.3.0-live-initramfs.x86_64.img
-      mode: 0644
-      contents:
-        source: tftp://nyt2.ponkila.com/fedora-coreos-33.20210328.3.0-live-initramfs.x86_64.img
-    - path: /var/home/core/tftp/fedora-coreos-33.20210328.3.0-live-kernel-x86_64
-      mode: 0644
-      contents:
-        source: tftp://nyt2.ponkila.com/fedora-coreos-33.20210328.3.0-live-kernel-x86_64
-    - path: /var/home/core/http-server/fedora-coreos-33.20210328.3.0-live-rootfs.x86_64.img
-      mode: 0644
-      contents:
-        source: https://nyt2.ponkila.com/ipxe/fedora-coreos-33.20210328.3.0-live-rootfs.x86_64.img
+          CMD make --directory=/tmp/ipxe/src bin/undionly.kpxe EMBED=/mnt/coreos/chainloader.ipxe && mv /tmp/ipxe/src/bin/undionly.kpxe /mnt/coreos
   filesystems:
     - path: /var/mnt/bakhal
       device: /dev/disk/by-label/bakhal

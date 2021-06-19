@@ -1,0 +1,54 @@
+#!ipxe
+dhcp
+
+set menu-timeout 5000
+set menu-default arch
+#set BASEURL tftp://nyt2.ponkila.com
+set BASEURL tftp://192.168.18.1
+
+############################ MAIN MENU ################################
+:start
+menu iPXE Boot Menu
+item
+item --gap --           ---------------- Operating Systems ----------------
+item --key 0 coreos     [0] CoreOS
+item --key 1 arch       [1] Arch Linux
+item --gap --           ---------------- Advanced Options -----------------
+item --key c config                     [c] Configure Settings
+item --key s shell                      [s] Enter iPxe Shell
+item --key r reboot                     [r] Reboot computer
+choose --default ${menu-default} --timeout 30000 target && goto ${target}
+
+############################## Main ITEMS ##############################
+
+:coreos
+set VERSION 34.20210529.3.0
+#set CONFIGURL https://nyt2.ponkila.com/ipxe/config.ign
+#set FEDORAURL https://nyt2.ponkila.com/ipxe
+set CONFIGURL http://192.168.18.1:8014/config.ign
+set FEDORAURL http://192.168.18.1:8014
+kernel ${BASEURL}/fedora-coreos-${VERSION}-live-kernel-x86_64 initrd=main coreos.live.rootfs_url=${FEDORAURL}/fedora-coreos-${VERSION}-live-rootfs.x86_64.img ignition.firstboot ignition.platform.id=metal ignition.config.url=${CONFIGURL} mitigations=off
+initrd --name main ${BASEURL}/fedora-coreos-${VERSION}-live-initramfs.x86_64.img
+boot
+
+:arch
+kernel ${BASEURL}/archboot-2020.07-vmlinuz_x86_64 initrd=main
+initrd --name main ${BASEURL}/archboot-2020.07-initramfs_x86_64.img
+boot
+
+:shell
+echo Type 'exit' to get back
+shell
+set menu-timeout 0
+goto start
+
+:failed
+echo Booting failed, dropping to shell
+goto shell
+
+:reboot
+reboot
+
+:config
+config
+goto start
