@@ -1,0 +1,185 @@
+variant: fcos
+version: 1.4.0
+kernel_arguments:
+  should_exist:
+    - mitigations=off
+  should_not_exist:
+    - mitigations=auto,nosmt
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCuc2L4Q39X4y/pYNpd4hb4UuDUdjzv+z/mFELSsHGzPFDpS0H+TbCj6tVGqsk/sF+KBDb9HKxZvEMGyJokcxirnlWjYeRblgvOxVeEjJbnvwtlw3NCsI901fRCBzU9Un0jnuQAzPkv/NjJs2bz9CKSoDEvGq2SGLE5jTAUJSaHf9BGaZIkf5IjTzqurekdeBy7aZkm3j1DEeKJxOONgfqDsD3owKVLBLtf1Rnf19rZYGAnXMQlQSb3Tdn921fB77nrUIsi1ImBVok5fOrSjiPWBEDPl+Xik3H1ru1X+dB3AQhsAvICt3IUbm1+1yP4aoEu2n+Q4I7qnjlzBehO5/S3Sv3RdxwNic6upHH1bDfHMcMMc4BQqjSnDqOWPi7yC2JPKm0A5ihw/3rxLr0RTX76IbqMqjbyP9210znlfVu8pG4e7aDkioTy4rgEfd+BnfrMtb9gzb9VvXWGS4Togi8xHm0s2Kms0QuozJ+LTNgQcaGJLl/I8AW4vVh8NSoR8ki/60ayWunO+FtbBlUtFSlC5wkuELNxU9nYWenlNQG3CnjCsebj3lnQDsdQMgRqnyWNcw/AJrIs6LE7/8nmRTWd3TwIL51gd+Yj7ONMNYK0ja+h4LxB93YGwEpfeSfXZjNlQNyV8gLxrdqtMzzFuNn/re0jKAVCCD+lvix5+lzYpQ== Juuso’siPhone
+storage:
+  links:
+    - path: /etc/localtime
+      target: /usr/share/zoneinfo/Europe/Helsinki
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        inline: rpi4
+    - path: /etc/NetworkManager/system-connections/br0.nmconnection
+      mode: 0600
+      contents:
+        inline: |
+          [connection]
+          id=br0
+          type=bridge
+          interface-name=br0
+          [bridge]
+          stp=FALSE
+          [ipv4]
+          dns-search=
+          may-fail=false
+          method=auto
+          [ipv6]
+          method=disabled
+    - path: /etc/NetworkManager/system-connections/br0-slave-enabcm6e4ei0.nmconnection
+      mode: 0600
+      contents:
+        inline: |
+          [connection]
+          id=br0-slave-enabcm6e4ei0
+          type=ethernet
+          interface-name=enabcm6e4ei0
+          master=br0
+          slave-type=bridge
+          [bridge-port]
+          [ipv6]
+          method=disabled
+    - path: /etc/NetworkManager/system-connections/wlan0-ap.nmconnection
+      mode: 0600
+      contents:
+        inline: |
+          [connection]
+          id=wlan0-ap
+          type=802-11-wireless
+          interface-name=wlan0
+          master=br0
+          slave-type=bridge
+          [bridge-port]
+          [ipv6]
+          method=disabled
+          [802-11-wireless]
+          band=bg
+          channel=7
+          mode=ap
+          ssid=ath1
+          [802-11-wireless-security]
+          group=ccmp;
+          key-mgmt=wpa-psk
+          pairwise=ccmp;
+          proto=rsn;
+          psk=hattivatti
+    - path: /var/home/core/hostapd/Dockerfile
+      mode: 0600
+      contents:
+        inline: |
+          FROM alpine
+          RUN apk add hostapd
+          ENTRYPOINT [ "/usr/sbin/hostapd" ]
+          CMD [ "-h" ]
+    - path: /var/home/core/dhcrelay/Dockerfile
+      mode: 0600
+      contents:
+        inline: |
+          FROM alpine
+          RUN apk add dhcrelay
+          ENTRYPOINT [ "/usr/sbin/dhcrelay" ]
+          CMD [ "-h" ]
+    - path: /var/home/core/hostapd/ath1.conf
+      mode: 0600
+      contents:
+        inline: |
+          country_code=FI
+          interface=wlan0
+          bridge=br0
+          ssid=ath1
+          hw_mode=g
+          channel=7
+          macaddr_acl=0
+          auth_algs=1
+          wpa=2
+          wpa_passphrase=hattivatti
+          wpa_key_mgmt=WPA-PSK
+          wpa_pairwise=TKIP
+          rsn_pairwise=CCMP
+  filesystems:
+    - path: /var/mnt/mmcblk1
+      device: /dev/disk/by-uuid/d5f60794-953e-4d39-9283-9a4738476f6c
+      format: btrfs
+      mount_options: [compress=zstd:2, noatime]
+      with_mount_unit: true
+systemd:
+  units:
+    - name: linger.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Linger allows containers to start without login
+        After=local-fs.target
+        Wants=local-fs.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/bin/loginctl enable-linger core
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: dhcrelay.service
+      enabled: false
+      contents: |
+        [Unit]
+        Description=dhcrelay for wifi access point
+        Requires=network-online.target
+        After=network-online.service
+
+        [Service]
+        Restart=always
+        RestartSec=5s
+        Type=simple
+        ExecStartPre=-/usr/bin/docker kill dhcrelay
+        ExecStartPre=-/usr/bin/docker rm dhcrelay
+        ExecStartPre=/usr/bin/docker build /var/home/core/dhcrelay -t dhcrelay
+        ExecStart=/usr/bin/docker run \
+          --name dhcrelay \
+          --net=host \
+          --cap-add=NET_ADMIN \
+          --cap-add=SYS_ADMIN \
+          dhcrelay -d 192.168.17.1
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: hostapd.service
+      enabled: false
+      contents: |
+        [Unit]
+        Description=wifi access point
+        Requires=network-online.target
+        After=network-online.service
+
+        [Service]
+        Restart=always
+        RestartSec=5s
+        Type=simple
+        ExecStartPre=-/usr/bin/docker kill hostapd
+        ExecStartPre=-/usr/bin/docker rm hostapd
+        ExecStartPre=/usr/bin/docker build /var/home/core/hostapd -t hostapd
+        ExecStart=/usr/bin/docker run \
+          --privileged \
+          --name hostapd \
+          --net=host \
+          --cap-add=CAP_MAC_OVERRIDE \
+          --cap-add=CAP_MAC_ADMIN \
+          --cap-add=NET_ADMIN \
+          --cap-add=SYS_ADMIN \
+          --cap-add=CAP_NET_BIND_SERVICE \
+          --cap-add=CAP_NET_BROADCAST \
+          --cap-add=CAP_NET_RAW \
+          --cap-add=CAP_SYS_RESOURCE \
+          -v /var/home/core/hostapd:/data:Z \
+          hostapd -d /data/ath1.conf
+
+        [Install]
+        WantedBy=multi-user.target

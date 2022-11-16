@@ -1,0 +1,46 @@
+#!ipxe
+dhcp
+
+set menu-timeout 5000
+set menu-default coreos
+set ARCH aarch64
+set BASEURL tftp://192.168.17.1/${ARCH}
+
+############################ MAIN MENU ################################
+:start
+menu iPXE Boot Menu
+item
+item --gap --           ---------------- Operating Systems ----------------
+item --key 0 coreos     [0] CoreOS
+item --gap --           ---------------- Advanced Options -----------------
+item --key c config                     [c] Configure Settings
+item --key s shell                      [s] Enter iPxe Shell
+item --key r reboot                     [r] Reboot computer
+choose --default ${menu-default} --timeout 3000 target && goto ${target}
+
+############################## Main ITEMS ##############################
+
+:coreos
+set VERSION 36.20220618.3.1
+set CONFIGURL http://192.168.17.1/ipxe/${ARCH}/rpi4.ign
+set FEDORAURL http://192.168.17.1/ipxe/${ARCH}
+kernel ${BASEURL}/fedora-coreos-${VERSION}-live-kernel-${ARCH} initrd=main coreos.live.rootfs_url=${FEDORAURL}/fedora-coreos-${VERSION}-live-rootfs.${ARCH}.img ignition.firstboot ignition.platform.id=metal ignition.config.url=${CONFIGURL}
+initrd --name main ${BASEURL}/fedora-coreos-${VERSION}-live-initramfs.${ARCH}.img
+boot
+
+:shell
+echo Type 'exit' to get back
+shell
+set menu-timeout 0
+goto start
+
+:failed
+echo Booting failed, dropping to shell
+goto shell
+
+:reboot
+reboot
+
+:config
+config
+goto start
