@@ -1,11 +1,14 @@
 variant: fcos
-version: 1.3.0
+version: 1.4.0
 passwd:
   users:
     - name: core
       ssh_authorized_keys:
-        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCoESlG8Y4e4IcGGjFb+nzweiIawOb9CX9lBCrzQAHleBN9++kf44YBJ/RMtUrdxbPmL87q56s9bgDPIG3zWJglB05eB0u6upMt8oNZgrZ2qM01juOEQNiTQzdV0iPWPvkQZfilkPVHzEO9h5BGfXIz+HIZukc1AseBl5c5L/5+y/FNydFyITWiPz/7W9dtlPvDPL0OWe0raEyDs2xOZLHGOY/YTT3k/Meoo7iUURUNtwwDcL6crcwj6OxYF8gaXuXWqYFumi7yK3bpC0JyZM7eKTO5+zSK7TelkhjtD+lHrZez47pAeU+vTJh/N160018dhrg0mPZuIzCLBWTQQst8OiGsgUEu/fh9+NDKbKiUZhSD9T3QVIBdFBlLpVEf5SNTeCIs2ur8149dOzrTEYY6Qppmq/iaqfrVRPPowJJp9WFzKpRJfI8tKpGd+ofRlORHfG7WHYIEUk+6Cwcpba6Mpt3+LxHThv1Hnvmm9ZMf14RKNUJNZRZbHZXBmAfjMyFWuJoqAdcl8yEbgJMu9TK8IGWsNEWIE2e1gSkjG1m2Z2UwqCpe0glxF5cy0JDOfksMIVE0P1V9UxHfyR5xlKnpELH2q0I+7W0pF+m62F4y/7MiYBFEMA1ing62wlws98yS9KGYqT6U/mL4wnr8U9WsuVhDkd0uCIui0f/HoPx3ZQ== Juuso’siPhone
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCuc2L4Q39X4y/pYNpd4hb4UuDUdjzv+z/mFELSsHGzPFDpS0H+TbCj6tVGqsk/sF+KBDb9HKxZvEMGyJokcxirnlWjYeRblgvOxVeEjJbnvwtlw3NCsI901fRCBzU9Un0jnuQAzPkv/NjJs2bz9CKSoDEvGq2SGLE5jTAUJSaHf9BGaZIkf5IjTzqurekdeBy7aZkm3j1DEeKJxOONgfqDsD3owKVLBLtf1Rnf19rZYGAnXMQlQSb3Tdn921fB77nrUIsi1ImBVok5fOrSjiPWBEDPl+Xik3H1ru1X+dB3AQhsAvICt3IUbm1+1yP4aoEu2n+Q4I7qnjlzBehO5/S3Sv3RdxwNic6upHH1bDfHMcMMc4BQqjSnDqOWPi7yC2JPKm0A5ihw/3rxLr0RTX76IbqMqjbyP9210znlfVu8pG4e7aDkioTy4rgEfd+BnfrMtb9gzb9VvXWGS4Togi8xHm0s2Kms0QuozJ+LTNgQcaGJLl/I8AW4vVh8NSoR8ki/60ayWunO+FtbBlUtFSlC5wkuELNxU9nYWenlNQG3CnjCsebj3lnQDsdQMgRqnyWNcw/AJrIs6LE7/8nmRTWd3TwIL51gd+Yj7ONMNYK0ja+h4LxB93YGwEpfeSfXZjNlQNyV8gLxrdqtMzzFuNn/re0jKAVCCD+lvix5+lzYpQ== Juuso’siPhone
 storage:
+  links:
+    - path: /etc/localtime
+      target: /usr/share/zoneinfo/Europe/Helsinki
   files:
     - path: /etc/hostname
       mode: 0644
@@ -16,12 +19,12 @@ storage:
       contents:
         inline: |
           variant: fcos
-          version: 1.3.0
+          version: 1.4.0
           passwd:
             users:
               - name: core
                 ssh_authorized_keys:
-                  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCoESlG8Y4e4IcGGjFb+nzweiIawOb9CX9lBCrzQAHleBN9++kf44YBJ/RMtUrdxbPmL87q56s9bgDPIG3zWJglB05eB0u6upMt8oNZgrZ2qM01juOEQNiTQzdV0iPWPvkQZfilkPVHzEO9h5BGfXIz+HIZukc1AseBl5c5L/5+y/FNydFyITWiPz/7W9dtlPvDPL0OWe0raEyDs2xOZLHGOY/YTT3k/Meoo7iUURUNtwwDcL6crcwj6OxYF8gaXuXWqYFumi7yK3bpC0JyZM7eKTO5+zSK7TelkhjtD+lHrZez47pAeU+vTJh/N160018dhrg0mPZuIzCLBWTQQst8OiGsgUEu/fh9+NDKbKiUZhSD9T3QVIBdFBlLpVEf5SNTeCIs2ur8149dOzrTEYY6Qppmq/iaqfrVRPPowJJp9WFzKpRJfI8tKpGd+ofRlORHfG7WHYIEUk+6Cwcpba6Mpt3+LxHThv1Hnvmm9ZMf14RKNUJNZRZbHZXBmAfjMyFWuJoqAdcl8yEbgJMu9TK8IGWsNEWIE2e1gSkjG1m2Z2UwqCpe0glxF5cy0JDOfksMIVE0P1V9UxHfyR5xlKnpELH2q0I+7W0pF+m62F4y/7MiYBFEMA1ing62wlws98yS9KGYqT6U/mL4wnr8U9WsuVhDkd0uCIui0f/HoPx3ZQ== Juuso’siPhone
+                  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCuc2L4Q39X4y/pYNpd4hb4UuDUdjzv+z/mFELSsHGzPFDpS0H+TbCj6tVGqsk/sF+KBDb9HKxZvEMGyJokcxirnlWjYeRblgvOxVeEjJbnvwtlw3NCsI901fRCBzU9Un0jnuQAzPkv/NjJs2bz9CKSoDEvGq2SGLE5jTAUJSaHf9BGaZIkf5IjTzqurekdeBy7aZkm3j1DEeKJxOONgfqDsD3owKVLBLtf1Rnf19rZYGAnXMQlQSb3Tdn921fB77nrUIsi1ImBVok5fOrSjiPWBEDPl+Xik3H1ru1X+dB3AQhsAvICt3IUbm1+1yP4aoEu2n+Q4I7qnjlzBehO5/S3Sv3RdxwNic6upHH1bDfHMcMMc4BQqjSnDqOWPi7yC2JPKm0A5ihw/3rxLr0RTX76IbqMqjbyP9210znlfVu8pG4e7aDkioTy4rgEfd+BnfrMtb9gzb9VvXWGS4Togi8xHm0s2Kms0QuozJ+LTNgQcaGJLl/I8AW4vVh8NSoR8ki/60ayWunO+FtbBlUtFSlC5wkuELNxU9nYWenlNQG3CnjCsebj3lnQDsdQMgRqnyWNcw/AJrIs6LE7/8nmRTWd3TwIL51gd+Yj7ONMNYK0ja+h4LxB93YGwEpfeSfXZjNlQNyV8gLxrdqtMzzFuNn/re0jKAVCCD+lvix5+lzYpQ== Juuso’siPhone
           storage:
             files:
               - path: /etc/hostname
@@ -103,13 +106,7 @@ storage:
     - path: /var/mnt/bakhal
       device: /dev/disk/by-label/bakhal
       format: btrfs
-      # to enable space_cache=v2, prepend 'clear_cache' option
-      mount_options: [compress=zstd:2, noatime, space_cache=v2]
-      with_mount_unit: true
-    - path: /var/mnt/lastu
-      device: /dev/disk/by-label/lastu
-      format: btrfs
-      mount_options: [compress=zstd:2, noatime]
+      mount_options: [compress=zstd:2, noatime=v2]
       with_mount_unit: true
 systemd:
   units:
@@ -144,33 +141,6 @@ systemd:
         ExecStartPre=/usr/bin/echo none > /sys/block/loop1/queue/scheduler
         ExecStartPre=/usr/bin/loginctl enable-linger core
         ExecStart=/usr/bin/chown -R core:core /var/home/core
-
-        [Install]
-        WantedBy=multi-user.target
-    - name: plex.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Plex media server
-        Requires=xteve.service
-        After=xteve.service
-
-        [Service]
-        User=core
-        Type=simple
-        ExecStartPre=-/bin/podman kill plex
-        ExecStartPre=-/bin/podman rm plex
-        ExecStart=/bin/podman run \
-          --name plex \
-          --network=host \
-          -e TZ="Europe/Helsinki" \
-          -e PLEX_UID="1000" \
-          -e PLEX_GID="1000" \
-          -e CHANGE_CONFIG_DIR_OWNERSHIP="false" \
-          -v /var/mnt/bakhal/Plex/.config:/config:Z \
-          -v /var/mnt/bakhal/Plex/.transcode:/transcode:Z \
-          -v /var/mnt/bakhal/Plex:/data:Z \
-          docker.io/plexinc/pms-docker
 
         [Install]
         WantedBy=multi-user.target
@@ -284,190 +254,5 @@ systemd:
           -v /var/home/core/tftp:/var/tftpboot:Z \
           docker.io/taskinen/tftp
 
-        [Install]
-        WantedBy=multi-user.target
-    - name: ipfs.service
-      enabled: false
-      contents: |
-        [Unit]
-        Description=ipfs server
-        Requires=network-online.target
-        After=network-online.target
-
-        [Service]
-        User=core
-        Type=simple
-        ExecStartPre=-/bin/podman kill ipfs
-        ExecStartPre=-/bin/podman rm ipfs
-        ExecStart=/bin/podman run \
-          --name ipfs \
-          --net=host \
-          -v /var/mnt/bakhal/ipfs:/export:Z \
-          -v /var/mnt/bakhal/ipfs:/data/ipfs:Z \
-          docker.io/ipfs/go-ipfs
-
-        [Install]
-        WantedBy=multi-user.target
-    - name: openethereum.service
-      enabled: false
-      contents: |
-        [Unit]
-        Description=openethereum
-        Requires=network-online.target
-        After=network-online.target
-
-        [Service]
-        User=core
-        Type=simple
-        ExecStartPre=-/bin/podman kill openethereum
-        ExecStartPre=-/bin/podman rm openethereum
-        ExecStart=/bin/podman run \
-          --name openethereum \
-          -v /var/mnt/lastu/blockchain/eth1/openethereum:/mainnet:Z \
-          docker.io/openethereum/openethereum \
-          --base-path /mainnet \
-          --pruning fast \
-          --no-warp
-
-        [Install]
-        WantedBy=multi-user.target
-    - name: openethereum-archive.service
-      enabled: false
-      contents: |
-        [Unit]
-        Description=openethereum-archive
-        Requires=network-online.target
-        After=network-online.target
-
-        [Service]
-        User=core
-        Type=simple
-        ExecStartPre=-/bin/podman kill openethereum-archive
-        ExecStartPre=-/bin/podman rm openethereum-archive
-        ExecStart=/bin/podman run \
-          --name openethereum-archive \
-          -v /var/mnt/bakhal/blockchain/eth1-archive/openethereum:/mainnet:Z \
-          docker.io/openethereum/openethereum \
-          --base-path /mainnet \
-          --fat-db on \
-          --pruning archive \
-          --tracing on
-
-        [Install]
-        WantedBy=multi-user.target
-    - name: openethereum-goerli.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=openethereum-goerli
-        Requires=network-online.target
-        After=network-online.target
-
-        [Service]
-        User=core
-        Type=simple
-        ExecStartPre=-/bin/podman kill openethereum-goerli
-        ExecStartPre=-/bin/podman rm openethereum-goerli
-        ExecStart=/bin/podman run \
-          --name openethereum-goerli \
-          -v /var/mnt/bakhal/blockchain/eth1/openethereum:/goerli:Z \
-          docker.io/openethereum/openethereum \
-          --chain goerli \
-          --base-path /goerli \
-          --fat-db on \
-          --pruning archive
-
-        [Install]
-        WantedBy=multi-user.target
-    - name: lighthouse.service
-      enabled: false
-      contents: |
-        [Unit]
-        Description=lighthouse
-        Requires=network-online.target
-        After=network-online.target
-
-        [Service]
-        User=core
-        Type=simple
-        ExecStartPre=-/bin/podman kill lighthouse
-        ExecStartPre=-/bin/podman rm lighthouse
-        ExecStart=/bin/podman run \
-          --name lighthouse \
-          -v /var/mnt/bakhal/blockchain/eth2/lighthouse:/root/.lighthouse:Z \
-          docker.io/sigp/lighthouse lighthouse \
-          --network mainnet \
-          beacon
-        [Install]
-        WantedBy=multi-user.target
-    - name: lighthouse-pyrmont.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=lighthouse-pyrmont
-        Requires=network-online.target
-        After=network-online.target
-
-        [Service]
-        User=core
-        Type=simple
-        ExecStartPre=-/bin/podman kill lighthouse-pyrmont
-        ExecStartPre=-/bin/podman rm lighthouse-pyrmont
-        ExecStart=/bin/podman run \
-          --name lighthouse-pyrmont \
-          -v /var/mnt/bakhal/blockchain/eth2/lighthouse-pyrmont:/root/.lighthouse:Z \
-          docker.io/sigp/lighthouse lighthouse \
-          --network pyrmont \
-          beacon
-        [Install]
-        WantedBy=multi-user.target
-    - name: tautulli.service
-      enabled: false
-      contents: |
-        [Unit]
-        Description=tautulli for plex
-        Requires=plex.service
-        After=plex.service
-
-        [Service]
-        User=core
-        Type=simple
-        ExecStartPre=-/bin/podman kill tautulli
-        ExecStartPre=-/bin/podman rm tautulli
-        ExecStart=/bin/podman run \
-          --name=tautulli \
-          -v /var/mnt/bakhal/tautulli:/config:Z \
-          -e PUID=1000 \
-          -e PGID=1000 \
-          -e TZ=Europe/Helsinki \
-          -p 8181:8181 \
-          --cap-add NET_ADMIN \
-          --net=host \
-          docker.io/tautulli/tautulli
-        [Install]
-        WantedBy=multi-user.target
-    - name: xteve.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=xteve (iptv) for plex
-        Requires=network-online.target
-        After=network-online.target
-
-        [Service]
-        User=core
-        Type=simple
-        ExecStartPre=-/bin/podman kill xteve
-        ExecStartPre=-/bin/podman rm xteve
-        ExecStart=/bin/podman run \
-          --name=xteve \
-          --net=host \
-          --cap-add NET_ADMIN \
-          -e TZ="Europe/Helsinki" \
-          -v /var/mnt/bakhal/xteve:/root/.xteve:Z \
-          -v /var/mnt/bakhal/xteve/config:/config:Z \
-          -v /var/mnt/bakhal/xteve/tmp:/tmp/xteve:Z \
-          -v /var/mnt/bakhal/xteve/tvheadend:/TVH:Z \
-          docker.io/alturismo/xteve:latest
         [Install]
         WantedBy=multi-user.target
